@@ -17,10 +17,22 @@ const PromptCardList = ({data , handleTagClick}) =>{
 }
 
 const Feed = () => {
+  const [searchTimeOut, setSearchTimeOut] = useState(null);
+  const [searchResults, setSearchResults] = useState([]);
   const [searchText, setSearchText] = useState('');
+  const [filteredPosts, setFilteredPosts] = useState([]);
   const [posts, setPosts] = useState([])
   const handleSearchChange = (e) =>{
+    const { value } = e.target;
+    setSearchText(value);
 
+    // Filter posts based on search text
+    const filtered = posts.filter((post) =>
+      post.prompt.toLowerCase().includes(value.toLowerCase()) ||
+      post.tag.toLowerCase().includes(value.toLowerCase()) ||
+      (post.username && post.username.toLowerCase().includes(value.toLowerCase()))
+    );
+    setFilteredPosts(filtered);
   }
   
   useEffect(() => {
@@ -29,17 +41,18 @@ const Feed = () => {
       const data = await response.json();
       
       setPosts (data);
+      setFilteredPosts(data);
     }
   
     fetchPosts();
   }, [])
-  
+   
 
   return (
     <section className='feed'>
      <form className='relative w-full flex-center'>
       <input type="text"
-       placeholder='Search for the tag or the usernaeme'
+       placeholder='Search for the tag or the username'
        value={searchText}
        onChange={handleSearchChange}
        required

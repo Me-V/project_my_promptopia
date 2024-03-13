@@ -26,31 +26,24 @@ const MyProfile = () => {
     }
     
     const handleDelete = async (post) => {
-      const hasConfirmed = window.confirm("Are you sure that you want to delete the selected prompt?");
+      const hasConfirmed = confirm(
+        "Are you sure you want to delete this prompt?"
+      );
   
       if (hasConfirmed) {
-          try {
-              // Send a DELETE request to the server to delete the prompt
-              const response = await fetch(`/api/prompt/${post._id.toString()}`, { method: 'DELETE' });
+        try {
+          await fetch(`/api/prompt/${post._id.toString()}`, {
+            method: "DELETE",
+          });
   
-              // Check if the request was successful
-              if (response.ok) {
-                  // Remove the deleted prompt from the state
-                  setPosts((prevPosts) => prevPosts.filter((p) => p._id !== post._id));
-                  // Provide feedback to the user
-                  alert('Prompt deleted successfully.');
-              } else {
-                  // If the request failed, throw an error
-                  throw new Error('Failed to delete the prompt.');
-              }
-          } catch (error) {
-              // Handle any errors that occurred during the deletion process
-              console.error('Error deleting prompt:', error);
-              alert('Failed to delete the prompt. Please try again later.');
-          }
+          const filteredPosts = posts.filter((item) => item._id !== post._id);
+  
+          setPosts(filteredPosts);
+        } catch (error) {
+          console.log(error);
+        }
       }
-  };
-  
+    };
 
     return (
     <Profile
