@@ -1,52 +1,72 @@
-'use client';
-import { useState } from 'react';
-import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
+// EditPrompt.js
+'use client'
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/router'; // Import useRouter from next/router
 import Form from '@components/Form';
 
-const createPrompt = () => {
+const EditPrompt = ({ promptId }) => {
   const router = useRouter();
-  const {data : session } = useSession();
-  
   const [submitting, setSubmitting] = useState(false);
   const [post, setPost] = useState({
-    prompt : '',
-    tag : '',
-  })
-  
-  const createPrompt = async (e) => {
-   e.preventDefault(); 
-   setSubmitting(true);
+    prompt: '',
+    tag: '',
+  });
 
-   try{
-    const response = await fetch('api/prompt/new',{
-      method : 'POST',
-      body : JSON.stringify({
-        prompt : post.prompt,
-        userId : session?.user.id,
-        tag : post.tag
-      })
-    })
-    if(response.ok){
-      router.push('/');
+  useEffect(() => {
+    const getPromptDetails = async () => {
+      try {
+        const response = await fetch(`/api/prompt/${promptId}`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch prompt details');
+        }
+        const data = await response.json();
+        setPost({
+          prompt: data.prompt,
+          tag: data.tag,
+        });
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    if (promptId) {
+      getPromptDetails();
     }
-   } catch(error){
-    console.log(error); 
-   }
-   finally{
-    setSubmitting(false);
-   }
-  } 
+  }, [promptId]);
+
+  const updatePrompt = async (e) => {
+    e.preventDefault();
+    setSubmitting(true);
+
+    if (!promptId) return alert('Prompt Id Not Found !!');
+
+    try {
+      const response = await fetch(`api/prompt/${promptId}`, {
+        method: 'PATCH',
+        body: JSON.stringify({
+          prompt: post.prompt,
+          tag: post.tag,
+        }),
+      });
+      if (response.ok) {
+        router.push('/');
+      }
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   return (
     <Form
-      type = "Create"
-      post = {post}
+      type="Edit"
+      post={post}
       setPost={setPost}
-      submitting = {submitting}
-      handleSubmit = {createPrompt}
+      submitting={submitting}
+      handleSubmit={updatePrompt}
     />
-  )
-}
+  );
+};
 
-export default createPrompt
+export default EditPrompt;
